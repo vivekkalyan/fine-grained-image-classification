@@ -14,5 +14,7 @@ data:
 	curl -O https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz; \
 	ls *.tgz | xargs -n1 tar -xzf
 	rm $(DATA_PATH)/*.tgz
+	cd $(DATA_PATH)/devkit; \
+	curl -O http://imagenet.stanford.edu/internal/car196/cars_test_annos_withlabels.mat
 
 .PHONY: data
