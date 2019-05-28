@@ -8,10 +8,11 @@ install:
 
 data:
 	mkdir -p $(DATA_PATH)
-	(cd $(DATA_PATH) && curl -O http://imagenet.stanford.edu/internal/car196/cars_train.tgz)
-	(cd $(DATA_PATH) && curl -O http://imagenet.stanford.edu/internal/car196/cars_test.tgz)
-	(cd $(DATA_PATH) && curl -O https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz)
-	(cd $(DATA_PATH) && ls *.tgz | xargs -n1 tar -xzf)
+	cd $(DATA_PATH); \
+	curl -O http://imagenet.stanford.edu/internal/car196/cars_train.tgz; \
+	curl -O http://imagenet.stanford.edu/internal/car196/cars_test.tgz; \
+	curl -O https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz; \
+	ls *.tgz | xargs -n1 tar -xzf
 	rm $(DATA_PATH)/*.tgz
 
 .PHONY: data
