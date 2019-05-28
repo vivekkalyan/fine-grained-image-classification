@@ -7,7 +7,7 @@ from scipy.io import loadmat
 
 data_dir = "data"
 train_file = "devkit/cars_train_annos.mat"
-test_file = "devkit/cars_test_annos.mat"
+test_file = "devkit/cars_test_annos_withlabels.mat"
 
 train = loadmat(os.path.join(data_dir, train_file))["annotations"][0]
 test = loadmat(os.path.join(data_dir, test_file))["annotations"][0]
@@ -25,8 +25,8 @@ def to_pandas(mat):
         values = [r[0][0] for r in row if (np.issubdtype(r.dtype, np.integer))]
         dataset.append([row[-1][0], *values])
     columns=['filename','bbox_x1','bbox_y1','bbox_x2','bbox_y2']
-    if len(dataset[0]) == 6:
-        columns.append('class_id')
+    assert(len(dataset[0]) == 6)
+    columns.append('class_id')
     df = pd.DataFrame(dataset, columns=columns)
     return df
 
