@@ -14,18 +14,18 @@ class StanfordCarsDataset(Dataset):
             transform (callable, optional): Optional transform to be applied
                 on a item.
         """
-        self.cars_df = pd.read_csv(csv_file)
+        self.df = pd.read_csv(csv_file)
         self.root_dir = root_dir
         self.transform = transform
 
     def __len__(self):
-        return len(self.cars_df)
+        return len(self.df)
 
     def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir, self.cars_df.filename[idx])
+        img_name = os.path.join(self.root_dir, self.df.filename[idx])
         image = Image.open(img_name)
-        class_id = self.cars_df.class_id[0]
-        item = {'image': image}
+        class_id = self.df.class_id[idx]
+        item = {'image': image, 'class_id': class_id}
 
         if self.transform:
             item = self.transform(item)
