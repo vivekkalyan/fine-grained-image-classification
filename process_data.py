@@ -5,15 +5,6 @@ import pandas as pd
 
 from scipy.io import loadmat
 
-data_dir = "data"
-train_fname = os.path.join(data_dir, "devkit/cars_train_annos.mat")
-test_fname = os.path.join(data_dir, "devkit/cars_test_annos_withlabels.mat")
-train_csv_fname = os.path.join(data_dir, "train.csv")
-test_csv_fname = os.path.join(data_dir, "test.csv")
-
-train = loadmat(train_fname)["annotations"][0]
-test = loadmat(test_fname)["annotations"][0]
-
 def to_pandas(mat):
     dataset = []
     for row in mat:
@@ -32,8 +23,18 @@ def to_pandas(mat):
     df = pd.DataFrame(dataset, columns=columns)
     return df
 
-train_df = to_pandas(train)
-test_df = to_pandas(test)
+if __name__ == "__main__":
+    data_dir = "data"
+    train_fname = os.path.join(data_dir, "devkit/cars_train_annos.mat")
+    test_fname = os.path.join(data_dir, "devkit/cars_test_annos_withlabels.mat")
+    train_csv_fname = os.path.join(data_dir, "train.csv")
+    test_csv_fname = os.path.join(data_dir, "test.csv")
 
-train_df.to_csv(train_csv_fname, index=False)
-test_df.to_csv(test_csv_fname, index=False)
+    train = loadmat(train_fname)["annotations"][0]
+    test = loadmat(test_fname)["annotations"][0]
+
+    train_df = to_pandas(train)
+    test_df = to_pandas(test)
+
+    train_df.to_csv(train_csv_fname, index=False)
+    test_df.to_csv(test_csv_fname, index=False)
