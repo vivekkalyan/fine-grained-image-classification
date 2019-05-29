@@ -6,11 +6,13 @@ import pandas as pd
 from scipy.io import loadmat
 
 data_dir = "data"
-train_file = "devkit/cars_train_annos.mat"
-test_file = "devkit/cars_test_annos_withlabels.mat"
+train_fname = os.path.join(data_dir, "devkit/cars_train_annos.mat")
+test_fname = os.path.join(data_dir, "devkit/cars_test_annos_withlabels.mat")
+train_csv_fname = os.path.join(data_dir, "train.csv")
+test_csv_fname = os.path.join(data_dir, "test.csv")
 
-train = loadmat(os.path.join(data_dir, train_file))["annotations"][0]
-test = loadmat(os.path.join(data_dir, test_file))["annotations"][0]
+train = loadmat(train_fname)["annotations"][0]
+test = loadmat(test_fname)["annotations"][0]
 
 def to_pandas(mat):
     dataset = []
@@ -32,3 +34,6 @@ def to_pandas(mat):
 
 train_df = to_pandas(train)
 test_df = to_pandas(test)
+
+train_df.to_csv(train_csv_fname, index=False)
+test_df.to_csv(test_csv_fname, index=False)
