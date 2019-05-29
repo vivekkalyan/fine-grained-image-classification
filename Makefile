@@ -16,5 +16,6 @@ data:
 	rm $(DATA_PATH)/*.tgz
 	cd $(DATA_PATH)/devkit; \
 	curl -O http://imagenet.stanford.edu/internal/car196/cars_test_annos_withlabels.mat
+	python process_data.py
 
 .PHONY: data
