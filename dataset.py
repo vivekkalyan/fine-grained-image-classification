@@ -17,6 +17,8 @@ class StanfordCarsDataset(Dataset):
                 on a item.
         """
         self.df = pd.read_csv(csv_file)
+        self.df.class_id -= 1 # make index start with 0
+        self.num_classes = len(self.df.class_id.unique())
         self.root_dir = root_dir
         self.transform = transform
 
