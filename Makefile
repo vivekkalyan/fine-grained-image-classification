@@ -1,4 +1,5 @@
 DATA_PATH = data
+RUNS_PATH = runs
 
 install:
 	ifndef VIRTUAL_ENV
@@ -17,5 +18,8 @@ data:
 	cd $(DATA_PATH)/devkit; \
 	curl -O http://imagenet.stanford.edu/internal/car196/cars_test_annos_withlabels.mat
 	python process_data.py
+
+runs:
+	mkdir -p $(RUNS_PATH)
 
 .PHONY: data
