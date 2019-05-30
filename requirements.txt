@@ -1,5 +1,9 @@
-scipy
-pandas
+tqdm
 
+matplotlib
+pandas
+scipy
+
+tensorboardX
 torch
 torchvision
