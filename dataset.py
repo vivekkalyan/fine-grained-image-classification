@@ -30,7 +30,7 @@ class StanfordCarsDataset(Dataset):
         item = {'image': image, 'class_id': class_id}
 
         if self.transform:
-            item = self.transform(item)
+            item['image'] = self.transform(item['image'])
 
         return item
 
@@ -51,10 +51,10 @@ class IndexSampler(Sampler):
         if self.shuffle:
             rand_idx = np.random.permutation(self.data_idx)
             for i in rand_idx:
-                yield self.dataset[i]
+                yield i
         else:
             for i in self.data_idx:
-                yield self.dataset[i]
+                yield i
 
     def __len__(self):
         return len(self.data_idx)
