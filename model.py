@@ -1,6 +1,8 @@
 import torchvision
 import torch.nn as nn
 
+from utils import device
+
 class Resnet34(nn.Module):
     def __init__(self, out_features):
         super().__init__()
@@ -10,7 +12,7 @@ class Resnet34(nn.Module):
         self.fc = nn.Linear(in_features, out_features)
 
     def forward(self, inputs):
-        x = inputs['image']
+        x = inputs['image'].to(device())
         x = self.resnet(x)
         x = x.squeeze(dim=3).squeeze(dim=2)
         x = self.fc(x)
