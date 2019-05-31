@@ -2,9 +2,7 @@ DATA_PATH = data
 RUNS_PATH = runs
 
 install:
-	ifndef VIRTUAL_ENV
-	$(error VIRTUAL_ENV is not set)
-	endif
+	 @[ "${VIRTUAL_ENV}" ] || ( echo ">> VIRTUAL_ENV is not set"; exit 1 )
 	pip install -r requirements.txt
 
 data:
