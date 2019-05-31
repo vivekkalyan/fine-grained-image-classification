@@ -7,6 +7,7 @@ from tqdm import tqdm
 from logger import Logger
 from lr_finder import LRFinder
 from utils import get_git_hash, device, copy_runpy
+from metrics import accuracy, unwrap_input
 
 class Trainer:
     def __init__(self, model, criterion, optimizer, train_loader,
@@ -19,6 +20,7 @@ class Trainer:
         self.val_loader = val_loader
         self._epoch_count = 0
         self._best_loss = None
+        self._best_acc = None
         save_dir = f"{self.get_num_dir(experiments_dir):04d}-{get_git_hash()}-{name}"
         self._save_dir = os.path.join(experiments_dir, save_dir)
         self.writer = Logger(self._save_dir)
@@ -28,9 +30,9 @@ class Trainer:
         for epoch in range(epochs):
             self._epoch_count += 1
             print("\n----- epoch ", self._epoch_count, " -----")
-            train_loss = self._train_epoch()
+            train_loss, train_acc = self._train_epoch()
             if self.val_loader:
-                val_loss = self._validate_epoch()
+                val_loss, val_acc = self._validate_epoch()
                 if self._best_loss is None or val_loss < self._best_loss:
                     self._save_checkpoint('best_model')
                     self._best_loss = val_loss
@@ -39,36 +41,48 @@ class Trainer:
     def _train_epoch(self, save_histogram=False):
         self.model.train()
         running_loss = 0
+        running_acc = 0
         for iter, inputs in enumerate(tqdm(self.train_loader)):
             self.optimizer.zero_grad()
             with torch.set_grad_enabled(True):
                 outputs = self.model(inputs)
                 batch_loss = self.criterion(outputs, inputs)
+                batch_acc = accuracy(*unwrap_input(outputs, inputs))
                 batch_loss.backward()
                 self.optimizer.step()
             running_loss += batch_loss.item()
+            running_acc += batch_acc.item()
             if self.log_every(iter):
                 self.writer.add_scalars("loss", {"train_loss":running_loss/float(iter+1)},
                                   (self._epoch_count - 1)*len(self.train_loader) + iter)
+                self.writer.add_scalars("acc", {"train_acc":running_acc/float(iter+1)},
+                                  (self._epoch_count - 1)*len(self.train_loader) + iter)
         epoch_loss = running_loss / len(self.train_loader)
-        print(f"train loss: {epoch_loss:.5f}")
-        return epoch_loss
+        epoch_acc = running_acc / len(self.train_loader)
+        print(f"train loss: {epoch_loss:.5f} train acc: {epoch_acc:.5f}")
+        return epoch_loss, epoch_acc
 
     def _validate_epoch(self):
         self.model.eval()
         running_loss = 0
+        running_acc = 0
         for iter, inputs in enumerate(tqdm(self.val_loader)):
             self.optimizer.zero_grad()
             with torch.set_grad_enabled(False):
                 outputs = self.model(inputs)
                 batch_loss = self.criterion(outputs, inputs)
+                batch_acc = accuracy(*unwrap_input(outputs, inputs))
             running_loss += batch_loss.item()
+            running_acc += batch_acc.item()
             if self.log_every(iter):
                 self.writer.add_scalars("loss", {"val_loss":running_loss/float(iter+1)},
                                   (self._epoch_count - 1)*len(self.val_loader) + iter)
+                self.writer.add_scalars("acc", {"val_acc":running_acc/float(iter+1)},
+                                  (self._epoch_count - 1)*len(self.val_loader) + iter)
         epoch_loss = running_loss / len(self.val_loader)
-        print(f"val loss: {epoch_loss:.5f}")
-        return epoch_loss
+        epoch_acc = running_acc / len(self.val_loader)
+        print(f"val loss: {epoch_loss:.5f} val acc: {epoch_acc:.5f}")
+        return epoch_loss, epoch_acc
 
     def get_num_dir(self, path):
         num_dir = len(os.listdir(path))
