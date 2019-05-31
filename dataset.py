@@ -28,6 +28,8 @@ class StanfordCarsDataset(Dataset):
     def __getitem__(self, idx):
         img_name = os.path.join(self.root_dir, self.df.filename[idx])
         image = Image.open(img_name)
+        if len(np.array(image).shape) < 3:
+            image = image.convert("RGB")
         class_id = self.df.class_id[idx]
         item = {'image': image, 'class_id': class_id}
 
