@@ -4,6 +4,8 @@ import torchvision
 
 from utils import device
 
+from functools import partial
+
 class Resnet34(nn.Module):
     def __init__(self, out_features):
         super().__init__()
@@ -14,6 +16,12 @@ class Resnet34(nn.Module):
         self.fc1 = LinearLayer(in_features*2, 512, dropout=0.25,
                 activation=nn.ReLU())
         self.fc2 = LinearLayer(512, out_features, dropout=0.5)
+        self._init()
+
+    def _init(self):
+        apply_init(self.fc1, nn.init.kaiming_normal_)
+        apply_init(self.fc2, nn.init.kaiming_normal_)
+
 
     def forward(self, inputs):
         x = inputs['image'].to(device())
@@ -66,3 +74,37 @@ class AdaptiveConcatPool2d(nn.Module):
 
     def forward(self, x):
         return torch.cat([self.mp(x), self.ap(x)], 1)
+
+BN_TYPES = (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)
+
+def init_default(module, func=nn.init.kaiming_normal_):
+    "Initialize `module` weights with `func` and set `bias` to 0."
+    if func:
+        if hasattr(module, 'weight'): func(module.weight)
+        if hasattr(module, 'bias') and hasattr(module.bias, 'data'): module.bias.data.fill_(0.)
+    return module
+
+def cond_init(module, init_func):
+    "Initialize the non-batchnorm layers of `module` with `init_func`."
+    if (not isinstance(module, BN_TYPES)) and requires_grad(module): init_default(module, init_func)
+
+def apply_init(module, init_func):
+    "Initialize all non-batchnorm layers of `module` with `init_func`."
+    apply_leaf(module, partial(cond_init, init_func=init_func))
+
+def apply_leaf(module, func):
+    "Apply `func` to children of `module`."
+    c = children(module)
+    if isinstance(module, nn.Module): func(module)
+    for l in c: apply_leaf(l,func)
+
+def children(module):
+    "Get children of `module`."
+    return list(module.children())
+
+def requires_grad(module, bool=None):
+    "If `bool` is not set return `requires_grad` of first param, else set `requires_grad` on all params as `bool`"
+    params = list(module.parameters())
+    if not params: return None
+    if bool is None: return params[0].requires_grad
+    for p in params: p.requires_grad=bool
