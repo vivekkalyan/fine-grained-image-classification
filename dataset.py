@@ -31,10 +31,10 @@ class StanfordCarsDataset(Dataset):
         if len(np.array(image).shape) < 3:
             image = image.convert("RGB")
         class_id = self.df.class_id[idx]
-        item = {'image': image, 'class_id': class_id}
 
         if self.transform:
-            item['image'] = self.transform(item['image'])
+            image = self.transform(image)
+        item = {'image': image, 'class_id': class_id}
 
         return item
 
