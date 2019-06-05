@@ -16,6 +16,7 @@ class Resnet34(nn.Module):
         self.fc1 = LinearLayer(in_features*2, 512, dropout=0.25,
                 activation=nn.ReLU())
         self.fc2 = LinearLayer(512, out_features, dropout=0.5)
+        freeze(self.resnet)
         self._init()
 
     def _init(self):
@@ -31,10 +32,6 @@ class Resnet34(nn.Module):
         x = self.fc1(x)
         x = self.fc2(x)
         return x
-
-    def freeze(self):
-        for param in self.resnet.parameters():
-            param.requires_grad = False
 
     def unfreeze(self):
         for param in self.resnet.parameters():
@@ -76,6 +73,14 @@ class AdaptiveConcatPool2d(nn.Module):
         return torch.cat([self.mp(x), self.ap(x)], 1)
 
 BN_TYPES = (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)
+
+def freeze(module, freeze_bn=False):
+    apply_leaf(module, partial(cond_freeze, freeze_bn=freeze_bn))
+
+def cond_freeze(module, freeze_bn):
+    "Don't freeze batchnorm layers unless `freeze_bn` is True"
+    if isinstance(module, BN_TYPES) and not freeze_bn: requires_grad(module, True)
+    else: requires_grad(module, False)
 
 def init_default(module, func=nn.init.kaiming_normal_):
     "Initialize `module` weights with `func` and set `bias` to 0."
