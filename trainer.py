@@ -45,13 +45,13 @@ class Trainer:
         for iter, (inputs, targets) in enumerate(tqdm(self.train_loader)):
             inputs = inputs.to(device())
             targets = targets.to(device())
-            self.optimizer.zero_grad()
             with torch.set_grad_enabled(True):
                 outputs = self.model(inputs)
                 batch_loss = self.criterion(outputs, targets)
                 batch_acc = accuracy(outputs, targets)
                 batch_loss.backward()
                 self.optimizer.step()
+                self.optimizer.zero_grad()
             running_loss += batch_loss.item()
             running_acc += batch_acc.item()
             if self.log_every(iter):
@@ -71,7 +71,6 @@ class Trainer:
         for iter, (inputs, targets) in enumerate(tqdm(self.val_loader)):
             inputs = inputs.to(device())
             targets = targets.to(device())
-            self.optimizer.zero_grad()
             with torch.set_grad_enabled(False):
                 outputs = self.model(inputs)
                 batch_loss = self.criterion(outputs, targets)
