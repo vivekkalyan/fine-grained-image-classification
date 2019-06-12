@@ -42,12 +42,14 @@ class Trainer:
         self.model.train()
         running_loss = 0
         running_acc = 0
-        for iter, inputs in enumerate(tqdm(self.train_loader)):
+        for iter, (inputs, targets) in enumerate(tqdm(self.train_loader)):
+            inputs = inputs.to(device())
+            targets = targets.to(device())
             self.optimizer.zero_grad()
             with torch.set_grad_enabled(True):
                 outputs = self.model(inputs)
-                batch_loss = self.criterion(outputs, inputs)
-                batch_acc = accuracy(*unwrap_input(outputs, inputs))
+                batch_loss = self.criterion(outputs, targets)
+                batch_acc = accuracy(outputs, targets)
                 batch_loss.backward()
                 self.optimizer.step()
             running_loss += batch_loss.item()
@@ -66,12 +68,14 @@ class Trainer:
         self.model.eval()
         running_loss = 0
         running_acc = 0
-        for iter, inputs in enumerate(tqdm(self.val_loader)):
+        for iter, (inputs, targets) in enumerate(tqdm(self.val_loader)):
+            inputs = inputs.to(device())
+            targets = targets.to(device())
             self.optimizer.zero_grad()
             with torch.set_grad_enabled(False):
                 outputs = self.model(inputs)
-                batch_loss = self.criterion(outputs, inputs)
-                batch_acc = accuracy(*unwrap_input(outputs, inputs))
+                batch_loss = self.criterion(outputs, targets)
+                batch_acc = accuracy(outputs, targets)
             running_loss += batch_loss.item()
             running_acc += batch_acc.item()
             if self.log_every(iter):
@@ -98,7 +102,7 @@ class Trainer:
             ), path)
 
     def log_every(self, i):
-        return (i % 100)==0 and i!=0
+        return (i % 100)==0
 
     def update_lr(self, lr):
         for g in self.optimizer.param_groups:

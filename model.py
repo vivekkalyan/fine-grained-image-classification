@@ -9,7 +9,7 @@ from functools import partial
 class Resnet34(nn.Module):
     def __init__(self, out_features):
         super().__init__()
-        model = torchvision.models.resnet34(pretrained=True)
+        model = torchvision.models.resnet18(pretrained=True)
         in_features = model.fc.in_features
         self.resnet = nn.Sequential(*(list(model.children())[:-2]))
         self.concat_pool = AdaptiveConcatPool2d()
@@ -24,8 +24,7 @@ class Resnet34(nn.Module):
         apply_init(self.fc2, nn.init.kaiming_normal_)
 
 
-    def forward(self, inputs):
-        x = inputs['image'].to(device())
+    def forward(self, x):
         x = self.resnet(x)
         x = self.concat_pool(x)
         x = x.view(x.size(0), -1)

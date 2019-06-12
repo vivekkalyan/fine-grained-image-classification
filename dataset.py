@@ -33,9 +33,8 @@ class StanfordCarsDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
-        item = {'image': image, 'class_id': class_id}
 
-        return item
+        return image, class_id
 
 
 class IndexSampler(Sampler):
