@@ -5,11 +5,18 @@ import torchvision
 from utils import device
 
 from functools import partial
+models = {
+    "resnet18": torchvision.models.resnet18,
+    "resnet34": torchvision.models.resnet34,
+    "resnet50": torchvision.models.resnet50,
+    "resnet101": torchvision.models.resnet101,
+    "resnet152": torchvision.models.resnet152,
+}
 
-class Resnet34(nn.Module):
-    def __init__(self, out_features):
+class Resnet(nn.Module):
+    def __init__(self, model_name, out_features):
         super().__init__()
-        model = torchvision.models.resnet18(pretrained=True)
+        model = models[model_name](pretrained=True)
         in_features = model.fc.in_features
         self.resnet = nn.Sequential(*(list(model.children())[:-2]))
         self.concat_pool = AdaptiveConcatPool2d()
