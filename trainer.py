@@ -65,9 +65,10 @@ class Trainer:
         print(f"test loss: {epoch_loss:.5f} test acc: {epoch_acc:.5f}")
         return epoch_loss, epoch_acc
 
-    def train_one_cycle(self, epochs=1):
-        self.onecycle = OneCycle(len(self.train_loader) * epochs,
-                self.optimizer.defaults['lr'])
+    def train_one_cycle(self, epochs=1, lr=None):
+        if lr is None:
+            lr = self.optimizer.defaults['lr']
+        self.onecycle = OneCycle(len(self.train_loader) * epochs, lr)
         self.train(epochs)
         self.onecycle = None
 
@@ -162,10 +163,6 @@ class Trainer:
                 g['betas'] = mom if isinstance(mom, tuple) else (mom, g['betas'][1])
             else:
                 raise ValueError
-
-    def change_lr(self, lr):
-        self.optimizer.defaults['lr'] = lr
-        self.update_lr(lr)
 
     def find_lr(self, start_lr=1e-7, end_lr=100, num_iter=100):
         optimizer_state = self.optimizer.state_dict()
