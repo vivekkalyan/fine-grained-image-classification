@@ -41,6 +41,24 @@ class Trainer:
                     self._best_loss = val_loss
                     print("new best val loss!")
 
+    def test(self, test_loader):
+        self.model.eval()
+        running_loss = 0
+        running_acc = 0
+        for iter, (inputs, targets) in enumerate(tqdm(test_loader)):
+            inputs = inputs.to(device())
+            targets = targets.to(device())
+            with torch.set_grad_enabled(False):
+                outputs = self.model(inputs)
+                batch_loss = self.criterion(outputs, targets)
+                batch_acc = accuracy(outputs, targets)
+            running_loss += batch_loss.item()
+            running_acc += batch_acc.item()
+        epoch_loss = running_loss / len(test_loader)
+        epoch_acc = running_acc / len(test_loader)
+        print(f"test loss: {epoch_loss:.5f} test acc: {epoch_acc:.5f}")
+        return epoch_loss, epoch_acc
+
     def train_one_cycle(self, epochs=1):
         self.onecycle = OneCycle(len(self.train_loader) * epochs,
                 self.optimizer.defaults['lr'])
