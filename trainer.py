@@ -42,7 +42,7 @@ class Trainer:
                     self.save_checkpoint('best_model')
                     self._best_loss = val_loss
                     print("new best val loss!")
-                if self._best_acc is None or val_acc < self._best_acc:
+                if self._best_acc is None or val_acc > self._best_acc:
                     self.save_checkpoint('best_model_acc')
                     self._best_acc = val_acc
                     print("new best val acc!")
@@ -134,6 +134,7 @@ class Trainer:
         torch.save(dict(
             epoch=self._epoch_count,
             best_loss=self._best_loss,
+            best_acc=self._best_acc,
             model=self.model.state_dict(),
             optimizer=self.optimizer.state_dict(),
         ), path)
