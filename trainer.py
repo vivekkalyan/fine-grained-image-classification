@@ -8,6 +8,7 @@ from logger import Logger
 from lr_finder import LRFinder
 from utils import get_git_hash, device, copy_runpy
 from metrics import accuracy, unwrap_input
+from onecycle import OneCycle
 
 class Trainer:
     def __init__(self, model, criterion, optimizer, train_loader,
@@ -38,6 +39,12 @@ class Trainer:
                     self._best_loss = val_loss
                     print("new best val loss!")
 
+    def train_one_cycle(self, epochs=1):
+        self.onecycle = OneCycle(len(self.train_loader) * epochs,
+                self.optimizer.defaults['lr'])
+        self.train(epochs)
+        self.onecycle = None
+
     def _train_epoch(self, save_histogram=False):
         self.model.train()
         running_loss = 0
@@ -45,6 +52,10 @@ class Trainer:
         for iter, (inputs, targets) in enumerate(tqdm(self.train_loader)):
             inputs = inputs.to(device())
             targets = targets.to(device())
+            if self.onecycle:
+                lr, mom = next(self.onecycle)
+                self.update_lr(lr)
+                self.update_mom(mom)
             with torch.set_grad_enabled(True):
                 outputs = self.model(inputs)
                 batch_loss = self.criterion(outputs, targets)
