@@ -54,7 +54,7 @@ class Trainer:
         for iter, (inputs, targets) in enumerate(tqdm(self.train_loader)):
             inputs = inputs.to(device())
             targets = targets.to(device())
-            if self.onecycle:
+            if self.onecycle is not None:
                 lr, mom = next(self.onecycle)
                 self.update_lr(lr)
                 self.update_mom(mom)
