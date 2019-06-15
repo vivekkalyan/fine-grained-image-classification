@@ -119,8 +119,14 @@ class Trainer:
             g['lr'] = lr
 
     def update_mom(self, mom):
+        keys = self.optimizer.param_groups[0].keys()
         for g in self.optimizer.param_groups:
-            g['momentum'] = mom
+            if 'momentum' in g.keys():
+                g['momentum'] = mom
+            elif 'betas' in g.keys():
+                g['betas'] = mom if isinstance(mom, tuple) else (mom, g['betas'][1])
+            else:
+                raise ValueError
 
     def change_lr(self, lr):
         self.optimizer.defaults['lr'] = lr
