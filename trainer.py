@@ -12,7 +12,8 @@ from onecycle import OneCycle
 
 class Trainer:
     def __init__(self, model, criterion, optimizer, train_loader,
-                 val_loader=None, name="experiment", experiments_dir="runs"):
+                 val_loader=None, name="experiment", experiments_dir="runs",
+                 save_dir=None):
         self.device = device()
         self.model = model.to(self.device)
         self.criterion = criterion
@@ -22,7 +23,8 @@ class Trainer:
         self._epoch_count = 0
         self._best_loss = None
         self._best_acc = None
-        save_dir = f"{self.get_num_dir(experiments_dir):04d}-{get_git_hash()}-{name}"
+        if save_dir is None:
+            save_dir = f"{self.get_num_dir(experiments_dir):04d}-{get_git_hash()}-{name}"
         self._save_dir = os.path.join(experiments_dir, save_dir)
         self.writer = Logger(self._save_dir)
         atexit.register(self.cleanup)
@@ -35,7 +37,7 @@ class Trainer:
             if self.val_loader:
                 val_loss, val_acc = self._validate_epoch()
                 if self._best_loss is None or val_loss < self._best_loss:
-                    self._save_checkpoint('best_model')
+                    self.save_checkpoint('best_model')
                     self._best_loss = val_loss
                     print("new best val loss!")
 
@@ -102,14 +104,22 @@ class Trainer:
         num_dir = len(os.listdir(path))
         return num_dir
 
-    def _save_checkpoint(self, fname):
+    def save_checkpoint(self, fname):
         path = os.path.join(self._save_dir, fname)
         torch.save(dict(
             epoch=self._epoch_count,
             best_loss=self._best_loss,
             model=self.model.state_dict(),
             optimizer=self.optimizer.state_dict(),
-            ), path)
+        ), path)
+
+    def load_checkpoint(self, fname):
+        path = os.path.join(self._save_dir, fname)
+        checkpoint = torch.load(path, map_location=lambda storage,
+                loc: storage)
+        self._epoch_count = checkpoint['epoch']
+        self.model.load_state_dict(checkpoint['model'])
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
 
     def log_every(self, i):
         return (i % 100)==0
