@@ -26,6 +26,7 @@ class Resnet(nn.Module):
                 activation=nn.ReLU())
         fc2 = LinearLayer(512, out_features, dropout=0.5)
         self.fc = nn.Sequential(concat_pool, flatten, fc1, fc2)
+        self.groups = [self.resnet[:6], self.resnet[6:], self.fc]
         freeze(self.resnet)
         apply_init(self.fc, nn.init.kaiming_normal_)
 

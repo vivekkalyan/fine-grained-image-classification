@@ -13,13 +13,15 @@ from onecycle import OneCycle
 class Trainer:
     def __init__(self, model, criterion, optimizer, train_loader,
                  val_loader=None, name="experiment", experiments_dir="runs",
-                 save_dir=None):
+                 save_dir=None, div_lr=1):
         self.device = device()
         self.model = model.to(self.device)
         self.criterion = criterion
         self.optimizer = optimizer
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.div_lr = div_lr
+        self.update_lr(self.optimizer.defaults['lr'])
         self._epoch_count = 0
         self._best_loss = None
         self._best_acc = None
@@ -143,8 +145,9 @@ class Trainer:
         return (i % 100)==0
 
     def update_lr(self, lr):
-        for g in self.optimizer.param_groups:
-            g['lr'] = lr
+        n = len(self.optimizer.param_groups) - 1
+        for i, g in enumerate(self.optimizer.param_groups):
+            g['lr'] = lr/(self.div_lr ** (n-i))
 
     def update_mom(self, mom):
         keys = self.optimizer.param_groups[0].keys()
