@@ -19,29 +19,30 @@ class Resnet(nn.Module):
         model = models[model_name](pretrained=True)
         in_features = model.fc.in_features
         self.resnet = nn.Sequential(*(list(model.children())[:-2]))
-        self.concat_pool = AdaptiveConcatPool2d()
-        self.fc1 = LinearLayer(in_features*2, 512, dropout=0.25,
+        concat_pool = AdaptiveConcatPool2d()
+        flatten = Flatten()
+        fc1 = LinearLayer(in_features*2, 512, dropout=0.25,
                 activation=nn.ReLU())
-        self.fc2 = LinearLayer(512, out_features, dropout=0.5)
+        fc2 = LinearLayer(512, out_features, dropout=0.5)
+        self.fc = nn.Sequential(concat_pool, flatten, fc1, fc2)
         freeze(self.resnet)
-        self._init()
-
-    def _init(self):
-        apply_init(self.fc1, nn.init.kaiming_normal_)
-        apply_init(self.fc2, nn.init.kaiming_normal_)
-
+        apply_init(self.fc, nn.init.kaiming_normal_)
 
     def forward(self, x):
         x = self.resnet(x)
-        x = self.concat_pool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.fc(x)
         return x
 
     def unfreeze(self):
         for param in self.resnet.parameters():
             param.requires_grad = True
+
+class Flatten(nn.Module):
+    'Flatten to a single dimension'
+    def __init__(self):
+        super().__init__()
+    def forward(self, x):
+        return x.view(x.size(0), -1)
 
 
 class LinearLayer(nn.Module):
