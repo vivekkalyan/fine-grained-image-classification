@@ -1,6 +1,8 @@
 DATA_PATH = data
 RUNS_PATH = runs
 
+all: install data runs
+
 install:
 	 @[ "${VIRTUAL_ENV}" ] || ( echo ">> VIRTUAL_ENV is not set"; exit 1 )
 	pip install -r requirements.txt
