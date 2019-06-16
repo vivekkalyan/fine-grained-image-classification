@@ -3,7 +3,7 @@ from model import *
 from utils import *
 from adamw import *
 
-from fastai2.vision import *
+from fastai.vision import *
 
 set_deterministic()
 
