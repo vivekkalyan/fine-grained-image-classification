@@ -10,6 +10,7 @@ resnet_cfg = {
     "resnet18": torchvision.models.resnet18,
     "resnet34": torchvision.models.resnet34,
     "resnet50": torchvision.models.resnet50,
+    "resnext50": torchvision.models.resnext50_32x4d,
     "resnet101": torchvision.models.resnet101,
     "resnet152": torchvision.models.resnet152,
 }
