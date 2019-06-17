@@ -97,13 +97,13 @@ class LRFinder(object):
         for iteration in tqdm(range(num_iter)):
             # Get a new set of inputs
             try:
-                inputs = next(iterator)
+                inputs, targets = next(iterator)
             except StopIteration:
                 iterator = iter(train_loader)
-                inputs = next(iterator)
+                inputs, targets = next(iterator)
 
             # Train on batch and retrieve loss
-            loss = self._train_batch(inputs)
+            loss = self._train_batch(inputs, targets)
 
             # Update the learning rate
             lr_schedule.step()
@@ -126,7 +126,7 @@ class LRFinder(object):
 
         print("Learning rate search finished. See the graph with {finder_name}.plot()")
 
-    def _train_batch(self, inputs):
+    def _train_batch(self, inputs, targets):
         # Set model to training mode
         self.model.train()
 
@@ -139,7 +139,7 @@ class LRFinder(object):
         # Forward pass
         self.optimizer.zero_grad()
         outputs = self.model(inputs)
-        loss = self.criterion(outputs, inputs)
+        loss = self.criterion(outputs, targets)
 
         # Backward pass
         loss.backward()

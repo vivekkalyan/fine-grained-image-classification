@@ -167,7 +167,7 @@ class Trainer:
 
     def find_lr(self, start_lr=1e-7, end_lr=100, num_iter=100):
         optimizer_state = self.optimizer.state_dict()
-        self.change_lr(start_lr)
+        self.update_lr(start_lr)
         self.lr_finder = LRFinder(self.model, self.optimizer, self.criterion,
                                   self.device)
         self.lr_finder.range_test(self.train_loader, end_lr=end_lr,
