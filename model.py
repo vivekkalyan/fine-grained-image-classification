@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision
+from efficientnet_pytorch import EfficientNet
 
 from utils import device
 
@@ -14,6 +15,37 @@ resnet_cfg = {
     "resnet101": torchvision.models.resnet101,
     "resnet152": torchvision.models.resnet152,
 }
+
+efficientnet_cfg = {
+    "b0": "efficientnet-b0",
+    "b1": "efficientnet-b1",
+    "b2": "efficientnet-b2",
+}
+
+class Efficientnet(nn.Module):
+    def __init__(self, model_name, out_features):
+        super().__init__()
+        model = EfficientNet.from_pretrained(efficientnet_cfg[model_name])
+        in_features = model._conv_head.in_channels
+        self.efficientnet = model
+        concat_pool = AdaptiveConcatPool2d()
+        flatten = Flatten()
+        fc1 = LinearLayer(in_features*2, 512, dropout=0.25,
+                activation=nn.ReLU())
+        fc2 = LinearLayer(512, out_features, dropout=0.5)
+        self.fc = nn.Sequential(concat_pool, flatten, fc1, fc2)
+        self.groups = [self.efficientnet, self.fc]
+        freeze(self.efficientnet)
+        apply_init(self.fc, nn.init.kaiming_normal_)
+
+    def forward(self, x):
+        x = self.efficientnet.extract_features(x)
+        x = self.fc(x)
+        return x
+
+    def unfreeze(self):
+        for param in self.efficientnet.parameters():
+            param.requires_grad = True
 
 class Resnet(nn.Module):
     def __init__(self, model_name, out_features):

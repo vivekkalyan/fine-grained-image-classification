@@ -1,5 +1,6 @@
 tqdm
 
+efficientnet_pytorch
 fastai
 matplotlib
 pandas
