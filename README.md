@@ -9,6 +9,7 @@ To achieve a fair evaluation of the final model, the test set is not used at all
 A good learning rate is estimated between stages by plotting the loss vs learning rate. We pick learning rates at areas where the loss is decreases at the highest rate.
 
 **Frozen Resnext model**
+
 ![Frozen loss plot](loss_plot_frozen.png)
 
 **Resnext model**
@@ -57,3 +58,39 @@ make
 ```
 python run.py
 ```
+
+# Test on new data
+
+A test script is provided to test on the "hold-out" data.
+
+In the `test.py` file, update the folder of the images (`folder`), the csv file (`labels_csv`) and the model (`train.load_checkpoint()`). 
+
+Note: if the csv has a different format, you will to specify which column the labels are in (`label_col`)
+
+# Appendix
+
+Experimental Results
+
+| exp | model          | epochs |      acc | onecycle | frozen |        lr | fa data |   wd | dsc_lr |
+|-----+----------------+--------+----------+----------+--------+-----------+---------+------+--------|
+|   3 | resnet18       |     10 |     0.40 | no       | yes    |      3e-3 | no      | 1e-2 |        |
+|   4 | resnet18       |     10 |     0.50 | no       | yes    |      3e-3 | yes     | 1e-2 |        |
+|   8 | resnet18       |     10 |     0.45 | yes      | yes    |      3e-3 | no      | 1e-2 |        |
+|  11 | resnet18       |     10 |     0.57 | yes(fa)  | yes    |      3e-3 | yes     | 1e-2 |        |
+|  12 | resnet18       |     10 |     0.55 | yes      | yes    |      3e-3 | yes     | 1e-2 |        |
+|  17 | resnet18       |     10 |    0.585 | yes(fa)  | yes    |    4.5e-3 | yes     | 1e-2 |        |
+|  22 | resnet50       |     20 |     0.60 | yes      | yes    |      1e-2 | yes     | 1e-2 |      3 |
+|  22 | resnet50       |  20+40 |     0.76 | yes      | yes+no | 1e-2+3e-3 | yes     | 1e-2 |      3 |
+|  28 | resnet50       |     10 |     0.70 | yes      | yes    |      3e-3 | yes     | 1e-2 |        |
+|  32 | resnet152      |     10 |     0.62 | no       | yes    |      3e-3 | yes     | 1e-2 |        |
+|  33 | resnet101      |     10 |     0.74 | yes      | yes    |      3e-3 | yes     | 1e-2 |        |
+|  36 | resnet101      |     20 |     0.76 | yes      | yes    |      1e-2 | yes     | 1e-2 |      3 |
+|  36 | resnet101      |  20+40 |     0.84 | yes      | yes    | 1e-2+3e-3 | yes     | 1e-2 |      3 |
+|  84 | resnet50       |     20 |     0.80 | yes      | yes    |      1e-2 | yes     | 1e-3 |      3 |
+|  84 | resnet50       |  20+40 |     0.86 | yes      | yes+no | 1e-2+3e-3 | yes     | 1e-3 |      3 |
+|  84 | resnet50       |  20+40 |    0.897 | yes      | yes+no | 1e-2+3e-3 | yes     | 1e-3 |      3 |
+|  86 | resnet50       |     20 |     0.76 | yes      | yes    |      1e-2 | yes     | 1e-3 |     10 |
+|  86 | resnet50       |  20+40 |     0.81 | yes      | yes+no | 1e-2+3e-3 | yes     | 1e-3 |     10 |
+|  94 | resnext50      |  20+40 | **0.91** | yes      | yes+no | 1e-2+3e-3 | yes     | 1e-3 |      3 |
+| 112 | efficientnetb3 |  20+40 |     0.89 | yes      | yes+no | 1e-2+3e-3 | yes     | 1e-3 |      3 |
+
